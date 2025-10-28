@@ -40,13 +40,13 @@ total23 <- read_csv("/Users/andrewli/Downloads/ev-power-Andrewli005/data/total-u
 price_all <- read_csv("/Users/andrewli/Downloads/ev-power-Andrewli005/data/av-energy-price-2021-2023.csv")
 
 # EV registrations
-ev_2023 <- read_csv("/Users/andrewli/Downloads/ev-power-Andrewli005/data/ev-registrations-by-state-2023.csv") %>%
-  janitor::clean_names() %>%
+ev_2023 <- read_csv("/Users/andrewli/Downloads/ev-power-Andrewli005/data/ev-registrations-by-state-2023.csv") |>
+  janitor::clean_names() |>
   rename(
     state = electric_vehicle_registrations_by_state_2023,
     ev_registrations = x2
-  ) %>%
-  filter(!is.na(state), state != "STATE") %>%   # remove header/junk rows
+  ) |>
+  filter(!is.na(state), state != "STATE") |>   # remove header/junk rows
   mutate(
     ev_registrations = str_replace_all(ev_registrations, "[^0-9]", ""),
     ev_registrations = as.numeric(ev_registrations),
@@ -61,7 +61,7 @@ head(ev_2023)
 
 ```{r}
 # assign an index instead of state names
-ev_indexed <- ev_2023 %>%
+ev_indexed <- ev_2023 |>
   mutate(index = row_number())
 
 make_tidy_place_table <- function(df, yr = NA) {
@@ -97,15 +97,15 @@ ev_raw <- readr::read_csv("/Users/andrewli/Downloads/ev-power-Andrewli005/data/e
 
 ev_c <- make_tidy_place_table(ev_raw, yr = 2023)
 
-ev_clean_sorted <- ev_2023 %>%
+ev_clean_sorted <- ev_2023 |>
   # remove totals or non-state rows
   filter(!(state %in% c("Total", "United States", "Usa", "U.s."))) %>%
   # sort by number of EVs
-  arrange(ev_registrations) %>%
+  arrange(ev_registrations) |>
   # preserve sorted order in the factor
   mutate(state = factor(state, levels = state))
 
-ev_top10 <- ev_clean_sorted %>%
+ev_top10 <- ev_clean_sorted |>
   top_n(10, ev_registrations)
 
 ggplot(ev_top10, aes(x = state, y = ev_registrations)) +
@@ -123,11 +123,11 @@ ggplot(ev_top10, aes(x = state, y = ev_registrations)) +
 
 ```{r}
 # 1. Get US map polygons
-us_map <- map_data("state") %>%
+us_map <- map_data("state") |>
   mutate(state = str_to_title(region))  # region is lowercase state name
 
 # 2. Join EV data to the map polygons by state name
-ev_map_data <- us_map %>%
+ev_map_data <- us_map |>
   left_join(ev_2023, by = "state")
 
 # 3. Plot choropleth
